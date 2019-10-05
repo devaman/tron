@@ -1,4 +1,4 @@
-const ip = "10.2.88.236:7000"
+const ip = "10.2.88.237:7000"
 const socket = new WebSocket(`ws://${ip}`);
 let meta = {
   id: `${Math.random() * 10000}`,
@@ -12,13 +12,19 @@ socket.addEventListener('open', function (event) {
     id: meta.id,
     pos: meta.pos
   }));
+ 
 });
+window.onbeforeunload = function(event) { 
+  socket.send(JSON.stringify({type: 3,id : meta.id}));
+  socket.close();
+ };
+
 socket.addEventListener('message', function (event) {
   const data = JSON.parse(event.data)
   console.log(data);
 
   if (data.type == 0) {
-    if (meta.id !== data.id)
+    if (meta.id !== data.id){
       meta = {
         ...meta,
         players: meta.players.concat({
@@ -26,8 +32,26 @@ socket.addEventListener('message', function (event) {
           pos: data.pos
         })
       }
+      socket.send(JSON.stringify({
+        type: 2,
+        id: meta.id,
+        pos: meta.pos,
+        recId: data.id 
+      }));
+    }
+  }else if(data.type == 2 && data.recId == meta.id) {
+    meta = {
+      ...meta,
+      players: meta.players.concat({
+        id: data.id,
+        pos: data.pos
+      })
+    }
+  }else if(data.type == 3) {
+    meta.players = meta.players.filter(function( obj ) {
+      return obj.id !== data.id;
+    });
   }
-
 });
 
 var View = function ($el) {
