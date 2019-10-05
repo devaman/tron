@@ -9,11 +9,10 @@ let meta = {
 // Auto Start
 var rootEl = $('.tron-game');
 var time = $('#time');
-const dateNow = new Date();
-let sub = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate(), dateNow.getHours(), dateNow.getMinutes() + 1) - dateNow;
-time.text(Math.ceil(sub / 1000))
-const startin20sec = () => {
+const startin20sec = (dateNow) => {
+  let sub = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate(), dateNow.getHours(), dateNow.getMinutes() + 1) - dateNow;
   let timer = sub;
+  time.text(Math.ceil(sub / 1000))
 
   let interval = setInterval(() => {
 
@@ -28,7 +27,6 @@ const startin20sec = () => {
 
   }, sub)
 }
-startin20sec()
 
 // Connection opened
 socket.addEventListener('open', function (event) {
@@ -76,6 +74,10 @@ socket.addEventListener('message', function (event) {
     meta.players = meta.players.filter(function (obj) {
       return obj.id !== data.id;
     });
+  }
+  else if (data.type == 4) {
+   let dateNow = new Date(data.time)
+   startin20sec(dateNow);
   }
 });
 
@@ -156,7 +158,7 @@ View.prototype.handleKeyEvent = function (event) {
   setTimeout(() => {
     this.board.players[this.myId].turn(View.KEYS1[event.keyCode]);
   }
-    , 150)
+    , 28)
 };
 
 
@@ -226,9 +228,9 @@ View.prototype.step = function () {
 
     else
       $('#winner').text(aliveID + " won this match!")
-    setTimeout(() => {
-      window.location.reload()
-    }, 5000)
+    // setTimeout(() => {
+    //   window.location.reload()
+    // }, 5000)
   }
   //   $('#replay').show();
 
