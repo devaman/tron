@@ -18,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ntp-client": "^0.5.3",
     "ws": "^7.1.2"
   }
 }

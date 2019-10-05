@@ -1,10 +1,35 @@
-const ip = "10.2.88.237:7000"
+const ip = "10.2.88.236:7000"
 const socket = new WebSocket(`ws://${ip}`);
+
 let meta = {
   id: `${Math.random() * 10000}`,
   pos: [Math.floor(Math.random() * 70 / 2), Math.floor(Math.random() * 100)],
   players: []
 }
+// Auto Start
+var rootEl = $('.tron-game');
+var time = $('#time');
+const dateNow = new Date();
+let sub = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate(), dateNow.getHours(), dateNow.getMinutes() + 1) - dateNow;
+time.text(Math.ceil(sub / 1000))
+const startin20sec = () => {
+  let timer = sub;
+
+  let interval = setInterval(() => {
+
+    timer = timer - 1000;
+    time.text(Math.ceil(timer / 1000).toString());
+  }, 1000)
+  setTimeout(() => {
+    $(".start-display").hide();
+    var view = new View(rootEl);
+    view.startGame();
+    clearInterval(interval);
+
+  }, sub)
+}
+startin20sec()
+
 // Connection opened
 socket.addEventListener('open', function (event) {
   socket.send(JSON.stringify({
@@ -12,19 +37,19 @@ socket.addEventListener('open', function (event) {
     id: meta.id,
     pos: meta.pos
   }));
- 
+
 });
-window.onbeforeunload = function(event) { 
-  socket.send(JSON.stringify({type: 3,id : meta.id}));
+window.onbeforeunload = function (event) {
+  socket.send(JSON.stringify({ type: 3, id: meta.id }));
   socket.close();
- };
+};
 
 socket.addEventListener('message', function (event) {
   const data = JSON.parse(event.data)
   console.log(data);
 
   if (data.type == 0) {
-    if (meta.id !== data.id){
+    if (meta.id !== data.id) {
       meta = {
         ...meta,
         players: meta.players.concat({
@@ -36,10 +61,10 @@ socket.addEventListener('message', function (event) {
         type: 2,
         id: meta.id,
         pos: meta.pos,
-        recId: data.id 
+        recId: data.id
       }));
     }
-  }else if(data.type == 2 && data.recId == meta.id) {
+  } else if (data.type == 2 && data.recId == meta.id) {
     meta = {
       ...meta,
       players: meta.players.concat({
@@ -47,8 +72,8 @@ socket.addEventListener('message', function (event) {
         pos: data.pos
       })
     }
-  }else if(data.type == 3) {
-    meta.players = meta.players.filter(function( obj ) {
+  } else if (data.type == 3) {
+    meta.players = meta.players.filter(function (obj) {
       return obj.id !== data.id;
     });
   }
@@ -62,32 +87,46 @@ var View = function ($el) {
 
   this.board = new Board(100, 70, meta);
   // speed depends on the difficulty setting
-  this.speed = window.speed ? window.speed : 35;
+  this.speed = 55;
   this.colorObj = Object.keys(this.board.players).map(d => {
     return { r: Math.floor(Math.random() * 255), g: Math.floor(Math.random() * 255), b: Math.floor(Math.random() * 255) }
   })
-  socket.addEventListener('message', (event)=>{
+  $('#mycolor').css('background', `rgb(${this.colorObj[0].r},${this.colorObj[0].g},${this.colorObj[0].b})`)
+
+  socket.addEventListener('message', (event) => {
     const data = JSON.parse(event.data)
 
-    if (data.type == 1)
-      if (data.id !== meta.id)
-        this.board.players[data.id].turn(View.KEYS1[parseInt(data.keyCode)]);
+    if (data.type == 1) {
+      // if (data.id !== meta.id)
+      console.log(Math.floor(Date.now() - parseInt(data.timestamp)) + "ms" + data);
+
+      $('#ping').text(Date.now() - parseInt(data.timestamp) + "ms")
+      this.board.players[data.id].turn(View.KEYS1[parseInt(data.keyCode)]);
+    }
   })
   this.setupGrid();
 };
 
 View.prototype.startGame = function () {
-  this.intervalId = window.setInterval(
-    this.step.bind(this),
-    this.speed+5
-  );
+  let timer = 5;
+  $('#gametimer').text(timer);
+  let interval = setInterval(() => {
+    timer--;
+    $('#gametimer').text(timer);
+  }, 1000)
+  setTimeout(() => {
+    this.intervalId = window.setInterval(
+      this.step.bind(this),
+      this.speed + 5
+    );
+
+  }, 5000)
 
 
   // Listen for messages
 
   $(window).on("keydown", this.handleKeyEvent.bind(this));
 
-  $(window).on("click", this.handleDifficultyChange.bind(this));
 };
 
 View.KEYS1 = {
@@ -106,19 +145,20 @@ View.KEYS1 = {
 
 View.prototype.handleKeyEvent = function (event) {
 
-  this.board.players[this.myId].turn(View.KEYS1[event.keyCode]);
+
   // Publish this keyEvent
   socket.send(JSON.stringify({
+    timestamp: Date.now(),
     type: 1,
     id: this.myId,
     keyCode: event.keyCode
   }))
-
+  setTimeout(() => {
+    this.board.players[this.myId].turn(View.KEYS1[event.keyCode]);
+  }
+    , 150)
 };
-View.prototype.subscribeToKeyEvents = function (id, keyCode) {
-  if (id !== this.myId)
-    this.board.players[id].turn(View.KEYS1[keyCode]);
-}
+
 
 View.prototype.handleDifficultyChange = function (event) {
   // define the difficulty on the window so it persists through each game
@@ -128,7 +168,7 @@ View.prototype.handleDifficultyChange = function (event) {
     $('.medium').css('color', 'white');
     $('.hard').css('color', 'white');
     window.difficulty = 1;
-    window.speed = 40;
+    window.speed = 200;
   } else if (target === "medium") {
     $('.easy').css('color', 'white');
     $('.medium').css('color', 'red');
@@ -158,7 +198,6 @@ View.prototype.setupGrid = function () {
   this.$el.html(html);
   this.$li = this.$el.find("li");
 };
-
 View.prototype.step = function () {
   // if (this.board.players.alive && this.board.player2.alive) {
   //   this.board.player1.move();
@@ -167,19 +206,34 @@ View.prototype.step = function () {
   //   } else {
   //     this.board.player2.computerMove();
   //   }
+  let totalAlive = meta.players.length;
+  let aliveID = null
   Object.keys(this.board.players).map(d => {
 
-    if (this.board.players[d].alive)
-      this.board.players[d].move()
+    if (this.board.players[d].alive) {
+      this.board.players[d].move();
+      aliveID = d;
+    }
+    else
+      totalAlive--;
   })
   this.render();
   // } else {
-  //   window.clearInterval(this.intervalId);
+  if (!totalAlive) {
+    window.clearInterval(this.intervalId);
+    if (aliveID === meta.id)
+      $('#winner').text('you won');
+
+    else
+      $('#winner').text(aliveID + " won this match!")
+    setTimeout(() => {
+      window.location.reload()
+    }, 5000)
+  }
   //   $('#replay').show();
 
   //   if (this.players === 2) {
   //     if (this.checkWinner() === "Player 1") {
-  //       $('#player1-win').show();
   //       window.wins.blue++;
   //     } else {
   //       $('#player2-win').show();
@@ -216,6 +270,7 @@ View.prototype.updateClasses = function (coords, color) {
   coords.forEach(function (coord) {
     var coordIdx = (coord.i * self.board.dimX) + coord.j;
     self.$li.eq(coordIdx).css("background", `rgb(${color.r},${color.g},${color.b})`);
+    self.$li.eq(coordIdx).css("box-shadow", `1px 1px 10px 2px rgb(${color.r},${color.g},${color.b})`);
   });
 };
 
