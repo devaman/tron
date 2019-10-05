@@ -1,25 +1,53 @@
-const socket = new WebSocket('ws://localhost:7000');
-
+const ip = "10.2.88.236:7000"
+const socket = new WebSocket(`ws://${ip}`);
+let meta = {
+  id: `${Math.random() * 10000}`,
+  pos: [Math.floor(Math.random() * 70 / 2), Math.floor(Math.random() * 100)],
+  players: []
+}
 // Connection opened
 socket.addEventListener('open', function (event) {
-    socket.send('Hello Serverasdasdas!');
-    console.log(event);
-    
+  socket.send(JSON.stringify({
+    type: 0,
+    id: meta.id,
+    pos: meta.pos
+  }));
+});
+socket.addEventListener('message', function (event) {
+  const data = JSON.parse(event.data)
+  console.log(data);
+
+  if (data.type == 0) {
+    if (meta.id !== data.id)
+      meta = {
+        ...meta,
+        players: meta.players.concat({
+          id: data.id,
+          pos: data.pos
+        })
+      }
+  }
+
 });
 
-// Listen for messages
-socket.addEventListener('message', function (event) {
-    console.log('Message from server ', event);
-});
 var View = function ($el) {
   this.$el = $el;
   // this.array = new Array2(100,70);
-  this.myId = Math.random() * 10000;
-  this.board = new Board(100, 70, this.myId);
+
+  this.myId = meta.id;
+
+  this.board = new Board(100, 70, meta);
   // speed depends on the difficulty setting
   this.speed = window.speed ? window.speed : 35;
   this.colorObj = Object.keys(this.board.players).map(d => {
     return { r: Math.floor(Math.random() * 255), g: Math.floor(Math.random() * 255), b: Math.floor(Math.random() * 255) }
+  })
+  socket.addEventListener('message', (event)=>{
+    const data = JSON.parse(event.data)
+
+    if (data.type == 1)
+      if (data.id !== meta.id)
+        this.board.players[data.id].turn(View.KEYS1[parseInt(data.keyCode)]);
   })
   this.setupGrid();
 };
@@ -27,8 +55,11 @@ var View = function ($el) {
 View.prototype.startGame = function () {
   this.intervalId = window.setInterval(
     this.step.bind(this),
-    this.speed
+    this.speed+5
   );
+
+
+  // Listen for messages
 
   $(window).on("keydown", this.handleKeyEvent.bind(this));
 
@@ -53,10 +84,15 @@ View.prototype.handleKeyEvent = function (event) {
 
   this.board.players[this.myId].turn(View.KEYS1[event.keyCode]);
   // Publish this keyEvent
+  socket.send(JSON.stringify({
+    type: 1,
+    id: this.myId,
+    keyCode: event.keyCode
+  }))
 
 };
 View.prototype.subscribeToKeyEvents = function (id, keyCode) {
-  if (id != this.myId)
+  if (id !== this.myId)
     this.board.players[id].turn(View.KEYS1[keyCode]);
 }
 
@@ -68,7 +104,7 @@ View.prototype.handleDifficultyChange = function (event) {
     $('.medium').css('color', 'white');
     $('.hard').css('color', 'white');
     window.difficulty = 1;
-    window.speed = 35;
+    window.speed = 40;
   } else if (target === "medium") {
     $('.easy').css('color', 'white');
     $('.medium').css('color', 'red');
