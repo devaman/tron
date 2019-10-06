@@ -1,9 +1,9 @@
-const ip = "10.2.88.162:2300"
+const ip = "10.2.88.236:7000"
 const socket = new WebSocket(`ws://${ip}`);
 
 let meta = {
   id: `${Math.random() * 10000}`,
-  pos: [Math.floor(Math.random() * 70 / 2), Math.floor(Math.random() * 100)],
+  pos: [Math.floor(Math.random() * 70 / 2)+35, Math.floor(Math.random() * 100/2)+25],
   players: []
 }
 // Auto Start
@@ -220,7 +220,10 @@ View.prototype.step = function () {
       aliveID = d;
     }
     else
-      totalAlive--;
+      {
+        this.board.clearSegment(d,this);
+        totalAlive--;
+      }
   })
   this.render();
   // } else {

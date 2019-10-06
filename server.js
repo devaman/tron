@@ -30,8 +30,10 @@ server.bind(7100);
 wss.on('connection', function connection(ws) {
     ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
         if(err) {
-            console.error(err);
-            return;
+            ws.send(JSON.stringify({
+                time:Date.now(),
+                type:4
+            }));
         }
         ws.send(JSON.stringify({
             time:date,
