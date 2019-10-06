@@ -34,4 +34,7 @@ The Marlin Network can scale to a large number of nodes without compromising on 
   
   - Minimising the delay using ntp to set same clock time for all the players.
   
-  
+ # Contributors
+ 
+ - Amit Chambial
+ - Anurag Thakur
