@@ -117,7 +117,7 @@ View.prototype.startGame = function () {
   $('#gametimer').text(timer);
   let interval = setInterval(() => {
     timer--;
-    $('#gametimer').text(timer);
+    $('#gametimer').text(Math.abs(timer));
   }, 1000)
   setTimeout(() => {
     this.intervalId = window.setInterval(
@@ -221,6 +221,11 @@ View.prototype.step = function () {
     }
     else
       {
+        if(meta.id === d){
+          $('.end-display').show();
+          $('#you-win').hide();
+          $('#you-lose').show();
+        }
         this.board.clearSegment(d,this);
         totalAlive--;
       }
@@ -233,12 +238,13 @@ View.prototype.step = function () {
       $('.end-display').show();
       $('#you-lose').hide();
       $('#you-win').show();
-
+      socket.close();
     }
     else{
       $('.end-display').show();
       $('#you-win').hide();
       $('#you-lose').show();
+      socket.close();
 
     }
     // setTimeout(() => {
