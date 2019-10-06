@@ -1,4 +1,4 @@
-const ip = "10.2.88.236:7000"
+const ip = "10.2.88.162:2300"
 const socket = new WebSocket(`ws://${ip}`);
 
 let meta = {
@@ -12,6 +12,7 @@ var time = $('#time');
 const startin20sec = (dateNow) => {
   let sub = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate(), dateNow.getHours(), dateNow.getMinutes() + 1) - dateNow;
   let timer = sub;
+  $(".end-display").hide();
   time.text(Math.ceil(sub / 1000))
 
   let interval = setInterval(() => {
@@ -94,7 +95,7 @@ var View = function ($el) {
     return { r: Math.floor(Math.random() * 255), g: Math.floor(Math.random() * 255), b: Math.floor(Math.random() * 255) }
   })
   $('#mycolor').css('background', `rgb(${this.colorObj[0].r},${this.colorObj[0].g},${this.colorObj[0].b})`)
-
+  $('#mycolor').text("My Color");
   socket.addEventListener('message', (event) => {
     const data = JSON.parse(event.data)
 
@@ -111,6 +112,8 @@ var View = function ($el) {
 
 View.prototype.startGame = function () {
   let timer = 5;
+  // $(".difficulty").show();
+  // $(window).on("click", this.handleDifficultyChange.bind(this));
   $('#gametimer').text(timer);
   let interval = setInterval(() => {
     timer--;
@@ -119,7 +122,7 @@ View.prototype.startGame = function () {
   setTimeout(() => {
     this.intervalId = window.setInterval(
       this.step.bind(this),
-      this.speed + 5
+      this.speed
     );
 
   }, 5000)
@@ -162,29 +165,29 @@ View.prototype.handleKeyEvent = function (event) {
 };
 
 
-View.prototype.handleDifficultyChange = function (event) {
-  // define the difficulty on the window so it persists through each game
-  var target = event.target.className;
-  if (target === "easy") {
-    $('.easy').css('color', 'red');
-    $('.medium').css('color', 'white');
-    $('.hard').css('color', 'white');
-    window.difficulty = 1;
-    window.speed = 200;
-  } else if (target === "medium") {
-    $('.easy').css('color', 'white');
-    $('.medium').css('color', 'red');
-    $('.hard').css('color', 'white');
-    window.difficulty = 2;
-    window.speed = 30;
-  } else if (target === "hard") {
-    $('.easy').css('color', 'white');
-    $('.medium').css('color', 'white');
-    $('.hard').css('color', 'red');
-    window.difficulty = 3;
-    window.speed = 25;
-  }
-};
+// View.prototype.handleDifficultyChange = function (event) {
+//   // define the difficulty on the window so it persists through each game
+//   var target = event.target.className;
+//   if (target === "easy") {
+//     $('.easy').css('color', 'red');
+//     $('.medium').css('color', 'white');
+//     $('.hard').css('color', 'white');
+//     window.difficulty = 1;
+//     window.speed = 200;
+//   } else if (target === "medium") {
+//     $('.easy').css('color', 'white');
+//     $('.medium').css('color', 'red');
+//     $('.hard').css('color', 'white');
+//     window.difficulty = 2;
+//     window.speed = 100;
+//   } else if (target === "hard") {
+//     $('.easy').css('color', 'white');
+//     $('.medium').css('color', 'white');
+//     $('.hard').css('color', 'red');
+//     window.difficulty = 3;
+//     window.speed = 25;
+//   }
+// };
 
 View.prototype.setupGrid = function () {
   var html = "";
@@ -223,11 +226,18 @@ View.prototype.step = function () {
   // } else {
   if (!totalAlive) {
     window.clearInterval(this.intervalId);
-    if (aliveID === meta.id)
-      $('#winner').text('you won');
+    if (aliveID === meta.id){
+      $('.end-display').show();
+      $('#you-lose').hide();
+      $('#you-win').show();
 
-    else
-      $('#winner').text(aliveID + " won this match!")
+    }
+    else{
+      $('.end-display').show();
+      $('#you-win').hide();
+      $('#you-lose').show();
+
+    }
     // setTimeout(() => {
     //   window.location.reload()
     // }, 5000)
@@ -274,6 +284,8 @@ View.prototype.updateClasses = function (coords, color) {
     self.$li.eq(coordIdx).css("background", `rgb(${color.r},${color.g},${color.b})`);
     self.$li.eq(coordIdx).css("box-shadow", `1px 1px 10px 2px rgb(${color.r},${color.g},${color.b})`);
   });
+  // var coordIdN = coords[coords.length-1].i*self.board.dimX + coords[coords.length-1].j;
+  // self.$li.eq(coordIdN).
 };
 
 View.prototype.checkWinner = function () {

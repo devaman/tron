@@ -10,7 +10,7 @@
 </head>
 
 <body>
-  <audio controls>
+  <audio autoplay controls id="my-audio" loop="loop" style="display: none;">
     <source src="./music/derezzed.mp3" type="audio/mpeg">
   </audio>
   <div class="tron-logo">
@@ -20,7 +20,7 @@
   <div class="intro-outro">
     <h1 class="start-display" id="instructions">Instructions</h1>
     <div class="start-display" id="instructions">
-      Don't crash! You are the <span style="color: blue;">blue</span> light cycle.
+      Don't crash! Your color will be shown on connecting to light cycle.
       Avoid the walls and trails of light left by you and your opponent.
       Navigate your light cycle by the arrow keys.
     </div>
@@ -28,15 +28,20 @@
     <div class="start-display" id="instructions" style="padding-top: 60px">
       Have a <span style="color: #FF4500;">Frenemy</span>?
     </div>
-
-
-
+    <h1 class="end-display" id="you-win">You win!</h1>
+    <h1 class="end-display" id="you-lose">You lose!</h1>
+    <h1 class="end-display" id="replay" onClick="window.location.reload()">PLAY AGAIN</h1>
   </div>
 
   <div class="display">
     <div class="leftspace">
-      <div id="mycolor" style="height: 10px;"></div>
-      <div id="winner"></div>
+        <div id="mycolor" style="padding: 18px;"></div>
+      <!-- <div class="difficulty" style="display: none;">
+        <h1 class="left-header"> Difficulty </h1>
+        <h1 class="easy">Easy</h1>
+        <h1 class="medium">Medium</h1>
+        <h1 class="hard">Hard</h1>
+      </div> -->
     </div>
     Ping:
     <div id="ping"></div>
@@ -78,6 +83,17 @@
       //   var view = new View(rootEl, window.players);
       //   view.startGame();
       // })
+    window.onload=function(){
+    window.x = document.getElementById("my-audio");
+    x.load(()=>{
+      x.play().then().catch(err=>{
+        console.log(err);
+        
+      })
+
+    })
+    // document.getElementById("my_audio").play();
+  }
   </script>
 
 </body>
