@@ -17,7 +17,12 @@
   
   # Introduction
   
-  Multiplayer Game using marlin protocol for creating responsive multiplayer game
+  Multiplayer Game using marlin protocol for creating responsive multiplayer game.
+ - What does Marlin give you?
+    - Speed:
+The Marlin Network is able to achieve global latencies of <150ms. This enables developers to build high-performance responsive distributed systems (including blockchains and dapps).
+    - Scale:
+The Marlin Network can scale to a large number of nodes without compromising on performance. Developers are no longer limited by the fanout capabilities of a single node.
   
   # Usage
   
