@@ -28,6 +28,18 @@ The Marlin Network can scale to a large number of nodes without compromising on 
   
   A new game start at every 1 min.
   
+  - How to start the Projecct
+    - Download Exec Bifrost file for OS from [here](http://gameoasis.marlin.pro/Bifrost/) 
+    ```
+    ./bifrost-ubuntu --channel testing --beacon "10.2.88.190:8002"
+    ```
+    - Run
+    ```
+    npm start
+    ```
+    - Run game in VS Live server
+    - Open the host ip in the Players computer.
+  
   # Concept Used
   
   ## For Synchronization
